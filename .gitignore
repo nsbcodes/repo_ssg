@@ -1,0 +1,8 @@
+**/*.exe
+test/**
+!test/README.md
+!test/test.ps1
+!test/src
+!test/out
+test/src/*
+test/out/*

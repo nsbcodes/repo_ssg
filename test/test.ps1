@@ -1,0 +1,1 @@
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $PSScriptRoot/out/*; Measure-Command { go run $PSScriptRoot/.. $PSScriptRoot/src $PSScriptRoot/out }

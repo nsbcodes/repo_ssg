@@ -1,0 +1,7 @@
+// Workspace Settings
+{
+	// Use 4-space tabs
+    "editor.detectIndentation": false,
+	"editor.tabSize": 4,
+	"editor.insertSpaces": false
+}
