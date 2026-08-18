@@ -1,1 +1,1 @@
-The empty `test` directory can contain any git repo of your choice for testing functionality with the `test.ps1` command in the directory above. `out` contains its output by default.
+The empty `src` directory can contain any git repo of your choice for testing functionality with the `test.ps1` command in the directory above. `out` contains this programs output by default.

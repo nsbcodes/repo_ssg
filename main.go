@@ -12,7 +12,7 @@ import (
 // Change template filepaths here
 var templates = map[string]*Template{
 	"root":   {Path: "root.html"},
-	"folder": {Path: "file.html"},
+	"folder": {Path: "folder.html"},
 	"file":   {Path: "file.html"},
 }
 
@@ -64,10 +64,12 @@ func main() {
 	}
 	log.Println("Repo indexed successfully.")
 
+	// Root Page
+	templates["root"].Compile(filepath.Join(args.outputPath, "index.html"), nil)
+
 	// Parse and Write Folder Templates
 
 	log.Println("Parsing and Writing Folder templates...")
-	templates["root"].Compile(filepath.Join(args.outputPath, "index.html"), nil)
 	for i, folder := range repo.Folders {
 		// Progress Indicator
 		final_i := len(repo.Folders) - 1
@@ -87,7 +89,6 @@ func main() {
 	// Parse and Write File Templates
 
 	log.Println("Parsing and Writing File templates...")
-	templates["root"].Compile(filepath.Join(args.outputPath, "index.html"), nil)
 	for i, file := range repo.Files {
 		// Progress Indicator
 		final_i := len(repo.Files) - 1
@@ -96,7 +97,7 @@ func main() {
 		}
 
 		path := filepath.Join(args.outputPath, file.path) + ".html"
-		err = templates["folder"].Compile(path, nil)
+		err = templates["file"].Compile(path, nil)
 		if err != nil {
 			log.Fatalf("Could not parse or write a file template for %s\nExiting with error \"%s\"", path, err.Error())
 		}
