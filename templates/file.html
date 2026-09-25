@@ -1,1 +1,41 @@
-i am a file
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
+	<title>repo_ssg {{.RepoName}} - File {{.TextPathBase}}</title>
+
+	<link rel="stylesheet" href="/public/pico.min.css">
+	<link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+	<nav>
+		<a class="secondary" href="/"><strong>repo_ssg</strong></a>
+		<span>{{.TextPathFull}}</span>
+	</nav>
+
+	<main class="container-fluid">
+		<div class="overflow-auto">
+			<article>
+				<header>
+					<div class="opposing">
+						<div>
+							<img class="file-icon" src="{{.Icon}}" alt="File Extension Image for {{.TextPathBase}}">
+							<code>{{.TextPathBase}}</code>
+						</div>
+						<div class="fit">
+							<span class="mr-padding">{{.Summary}}</span>
+							<a href="{{.ParentLink}}" role="button" class="secondary btn-sm">Parent Directory</a>
+						</div>
+					</div>
+				</header>
+				<div>{{.Preview}}</div>
+			</article>
+		</div>
+	</main>
+</body>
+
+</html>

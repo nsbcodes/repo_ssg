@@ -1,1 +1,61 @@
-i am a folder
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
+	<title>repo_ssg | {{.RepoName}} | Folder {{.TextPathBase}}</title>
+
+	<link rel="stylesheet" href="/public/pico.min.css">
+	<link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+	<nav>
+		<a class="secondary" href="/"><strong>repo_ssg</strong></a>
+		<span>{{.TextPathFull}}</span>
+	</nav>
+
+	<main class="container-fluid">
+		<div class="overflow-auto">
+			<div class="opposing">
+				<h1>{{.TextPathBase}}</h1>
+				{{if not .IsRoot}}
+				<div class="fit" role="group">
+					<a href="{{.ParentLink}}" role="button" class="secondary btn-sm">Parent Directory</a>
+				</div>
+				{{end}}
+			</div>
+
+			<table>
+				{{range .Children}}
+					<tr>
+						<td>
+							<img class="file-icon" src="{{.Icon}}" alt="File Extension Image for {{.TextPathBase}}">
+							<a href="/content/{{.Path}}.html">
+								{{.TextPathBase}}
+							</a>
+						</td>
+						<td class="right">
+							{{if .IsFolder}}
+								Folder
+							{{else}}
+								File
+							{{end}}
+						</td>
+					</tr>
+				{{end}}
+			</table>
+
+			{{if .Preview}}
+			<article>
+				<header><code>{{.PreviewFile}}</code></header>
+				{{.Preview}}
+			</article>
+			{{end}}
+		</div>
+	</main>
+</body>
+
+</html>

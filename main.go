@@ -11,12 +11,11 @@ import (
 
 // Change template filepaths here
 var templates = map[string]*Template{
-	"root":   {Path: "root.html"},
 	"folder": {Path: "folder.html"},
 	"file":   {Path: "file.html"},
 }
 
-//go:embed templates/**.html
+//go:embed templates
 var embedTemplateFS embed.FS
 
 func main() {
@@ -55,7 +54,8 @@ func main() {
 	log.Println("Templates loaded successfully.")
 
 	// Load input repo files
-	// Note that this an index of all files
+	// Note that this only an index of all files
+	// The files haven't been read/opened yet
 	// Does not contain anything to substitute into templates (HTML)
 	log.Println("Indexing repo...")
 	repo, err := IndexRepo(args.repoPath)
@@ -64,44 +64,87 @@ func main() {
 	}
 	log.Println("Repo indexed successfully.")
 
-	// Root Page
-	templates["root"].Compile(filepath.Join(args.outputPath, "index.html"), nil)
+	// Root Page (index.html)
+	folder := repo.Folders["."]
+	folderData, err := LoadFolder(".", args.repoPath+string(os.PathSeparator), folder, &repo)
+	folderData.TextPathFull = fmt.Sprintf("Root Directory | %d Folders | %d Files", len(repo.Folders), len(repo.Files))
+	folderData.TextPathBase = fmt.Sprintf("Root Directory of %s", repo.Name)
+	if err != nil {
+		log.Fatalf("Could not load root folder\nExiting with error \"%s\"", err.Error())
+	}
+	templates["folder"].Compile(filepath.Join(args.outputPath, "index.html"), folderData)
 
 	// Parse and Write Folder Templates
 
 	log.Println("Parsing and Writing Folder templates...")
-	for i, folder := range repo.Folders {
+	i := 0
+	for path, folder := range repo.Folders {
 		// Progress Indicator
 		final_i := len(repo.Folders) - 1
-		if i%10 == 0 || i == 0 || i == final_i {
+		if i == 0 || i == final_i || i%5 == 0 {
 			fmt.Printf("\rProgress: %d/%d", i, final_i)
 		}
 
-		path := filepath.Join(args.outputPath, folder.path) + ".html"
-		err = templates["folder"].Compile(path, nil)
-		if err != nil {
-			log.Fatalf("Could not parse or write a folder template for %s\nExiting with error \"%s\"", path, err.Error())
+		// Skip the root folder since we already handled it
+		if path == "." {
+			continue
 		}
+
+		rel := filepath.Join("content", path)
+		out := filepath.Join(args.outputPath, rel) + ".html"
+		folderData, err := LoadFolder(path, filepath.Join(args.repoPath, path), folder, &repo)
+		if err != nil {
+			log.Fatalf("Could not load folder %s\nExiting with error \"%s\"", path, err.Error())
+		}
+
+		err = templates["folder"].Compile(out, folderData)
+		if err != nil {
+			log.Fatalf("Could not parse or write a folder template for %s\nExiting with error \"%s\"", out, err.Error())
+		}
+
+		// Update state for next iteration
+		i++
 	}
-	fmt.Println()
-	log.Println("Folder templates parsed and written successfully...")
+	log.Println("\nFolder templates parsed and written successfully...")
 
 	// Parse and Write File Templates
 
 	log.Println("Parsing and Writing File templates...")
-	for i, file := range repo.Files {
+	i = 0
+	for path := range repo.Files {
 		// Progress Indicator
 		final_i := len(repo.Files) - 1
-		if i%10 == 0 || i == 0 || i == final_i {
+		if i == 0 || i == final_i || i%5 == 0 {
 			fmt.Printf("\rProgress: %d/%d", i, final_i)
 		}
 
-		path := filepath.Join(args.outputPath, file.path) + ".html"
-		err = templates["file"].Compile(path, nil)
+		rel := filepath.Join("content", path)
+		out := filepath.Join(args.outputPath, rel) + ".html"
+		fileData, err := LoadFile(path, filepath.Join(args.repoPath, path), &repo)
 		if err != nil {
-			log.Fatalf("Could not parse or write a file template for %s\nExiting with error \"%s\"", path, err.Error())
+			log.Fatalf("Could not load file %s\nExiting with error \"%s\"", path, err.Error())
 		}
+		err = templates["file"].Compile(out, fileData)
+		if err != nil {
+			log.Fatalf("Could not parse or write a file template for %s\nExiting with error \"%s\"", out, err.Error())
+		}
+
+		// Update state for next iteration
+		i++
 	}
-	fmt.Println()
-	log.Println("File templates parsed and written successfully...")
+	log.Println("\nFile templates parsed and written successfully.")
+
+	// Copy public folder for assets and css files
+	log.Println("Copying public folder assets...")
+	sub, err := fs.Sub(embedTemplateFS, "templates/public")
+	if err != nil {
+		log.Fatalf("Path given to fs.Sub is invalid\nExiting with error \"%s\"", err.Error())
+	}
+	publicDir := filepath.Join(args.outputPath, "public")
+
+	err = os.CopyFS(publicDir, sub)
+	if err != nil {
+		log.Fatalf("Could not copy public folder assets\nExiting with error \"%s\"", err.Error())
+	}
+	log.Println("Copied public folder assets successfully.")
 }

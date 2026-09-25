@@ -2,5 +2,7 @@ if (!(Test-Path $PSScriptRoot/src/*) ) { Write-Host -ForegroundColor Red "$PSScr
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $PSScriptRoot/out/*
 $sw = [Diagnostics.Stopwatch]::StartNew()
 go run $PSScriptRoot/.. $PSScriptRoot/src $PSScriptRoot/out
+$success = $?
 $sw.Stop()
 Write-Host -ForegroundColor Green "Static Site Compilation Time: $($sw.Elapsed)"
+if ($success) { python -m http.server -d $PSScriptRoot/out }

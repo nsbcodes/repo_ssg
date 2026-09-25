@@ -1,105 +1,98 @@
 package main
 
 import (
+	"html/template"
 	"io/fs"
-	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/yuin/goldmark/v2/parser"
+	gmHTML "github.com/yuin/goldmark/v2/renderer/html"
 )
 
 // Single Main struct
-// Head of data
+// Head of data for indexing
 type Repo struct {
 	Name    string
-	Folders []Node
-	Files   []Node
+	Folders map[string]Folder
+	Files   map[string]File
 }
 
-// Enums for File and Folder
-type NodeType int
-
-const (
-	NodeTypeFile NodeType = iota
-	NodeTypeFolder
-)
-
-// Node (file/folder) in general tree
+// Node (Child of Folder) struct
 type Node struct {
-	// Filepath string slice
-	path      string
-	pathSplit []string
+	Path     template.URL
+	IsFolder bool
 }
+
+// Folder Node
+type Folder struct {
+	Children []Node
+}
+
+// File Node
+// Purposely empty
+type File struct{}
 
 // Enums for File Type (media format)
-type FileTypes int
+type FileType int
 
 const (
-	FileTypeText FileTypes = iota
+	FileTypeCode FileType = iota
 	FileTypeMarkdown
 	FileTypeImage
-	FileTypeTable
 	FileTypeDocument
+	FileTypeBinary
+	FileTypeEmpty
 )
 
-// Returned as the data associated with a specific file
-type FileData struct {
-	Text     string
-	FileType FileTypes
-}
+var _p parser.Parser
+var _r gmHTML.Renderer
 
 // Indexes a repo
 func IndexRepo(repoPath string) (repo Repo, err error) {
-	repoPathLength := len(strings.Split(repoPath, string(filepath.Separator)))
+	repo.Folders = make(map[string]Folder)
+	repo.Files = make(map[string]File)
+	repo.Name = filepath.Base(repoPath)
+
 	err = filepath.WalkDir(repoPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		// Paths are relative to repoPath, not the whole system path
-		splitPath := strings.Split(path, string(filepath.Separator))[repoPathLength:]
-		fullPath := strings.Join(splitPath, string(filepath.Separator))
 
-		// Don't record root directory
-		if len(splitPath) == 0 {
-			return nil
+		// Relative to directory being walked
+		relPath, err := filepath.Rel(repoPath, path)
+		if err != nil {
+			return err
 		}
 
-		node := Node{
-			path:      fullPath,
-			pathSplit: splitPath,
-		}
+		// // Don't record root directory
+		// if len(relPathSplit) == 0 {
+		// 	return nil
+		// }
 
 		if d.IsDir() {
-			repo.Folders = append(repo.Folders, node)
+			repo.Folders[relPath] = Folder{}
 		} else {
-			repo.Files = append(repo.Files, node)
+			repo.Files[relPath] = File{}
+		}
+
+		// Update the parent folder's children array
+		// Note that files can also be in the root directory,
+		// in this case parentPath is "."
+
+		// Works with the edge case of "." (returns ".")
+		parentPath := filepath.Dir(relPath)
+
+		// Skip this if we are currently evaluating the root directory itself (not its children)
+		if relPath != "." {
+			f := repo.Folders[parentPath]
+			f.Children = append(f.Children, Node{
+				Path:     template.URL(filepath.ToSlash(relPath)),
+				IsFolder: d.IsDir(),
+			})
+			repo.Folders[parentPath] = f
 		}
 
 		return nil
 	})
 	return repo, err
-}
-
-func LoadFile(node Node) (fileData FileData, err error) {
-	// Attempt to load file as string
-	file, err := os.ReadFile(node.path)
-	if err != nil {
-		return fileData, err
-	}
-	text := string(file)
-
-	split := strings.Split(node.path, ".")
-	extension := split[len(split)-1]
-	fileType := FileTypeText
-	switch extension {
-	case "md", "markdown":
-		fileType = FileTypeMarkdown
-	case "apng", "png", "avif", "gif", "jpg", "jpeg", "svg", "webp":
-		fileType = FileTypeImage
-	case "json", "csv", "xml":
-		fileType = FileTypeTable
-	case "pdf":
-		fileType = FileTypeDocument
-	}
-
-	return FileData{Text: text, FileType: fileType}, err
 }

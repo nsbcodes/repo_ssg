@@ -1,0 +1,63 @@
+@font-face {
+	font-family: "Optician Sans";
+	src: url("OpticianSans.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Inter";
+	src: url("InterVariable.woff2") format("woff2");
+	font-weight: 100 900;
+}
+
+@font-face {
+	font-family: "Fira Code";
+	src: url("FiraCode.ttf") format("truetype");
+	font-weight: 100 900;
+}
+
+body {
+	font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+nav *, #preview * {
+	font-family: 'Optician Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+	padding: 20px 40px;
+}
+
+nav {
+	padding: 20px;
+}
+
+.opposing {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.fit {
+	width: fit-content;
+}
+
+.right {
+	text-align: right;
+}
+
+.btn-sm {
+	font-size: 0.8rem;
+	padding: 0.5rem 1rem;
+}
+
+code {
+	font-family: "Fira Code", monospace;
+}
+
+.mr-padding {
+	margin-right: 10px;
+}
+
+.file-icon {
+	width: 1.5rem;
+}
