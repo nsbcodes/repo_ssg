@@ -17,7 +17,10 @@ import (
 	"github.com/yuin/goldmark/v2/renderer/html"
 )
 
-// Expensive Function
+var style *chroma.Style = styles.Get("catppuccin-frappe")
+var formatter *chHTML.Formatter = chHTML.New(chHTML.InlineCode(true))
+
+// Expensive Function regardless of how we highlight code to HTML
 func RenderCode(fileText string, ext string) (htmlOut template.HTML, err error) {
 	var buf bytes.Buffer
 	// This is slow
@@ -26,8 +29,6 @@ func RenderCode(fileText string, ext string) (htmlOut template.HTML, err error) 
 		lexer = lexers.Fallback
 	}
 	lexer = chroma.Coalesce(lexer)
-	style := styles.Get("catppuccin-frappe")
-	formatter := chHTML.New(chHTML.InlineCode(true), chHTML.WithLineNumbers(true))
 	iterator, err := lexer.Tokenise(nil, fileText)
 	if err != nil {
 		return htmlOut, err

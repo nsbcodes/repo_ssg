@@ -16,6 +16,12 @@ type Template struct {
 	Path string
 }
 
+// Change the default template filepaths here
+var templates = map[string]*Template{
+	"folder": {Path: "folder.html"},
+	"file":   {Path: "file.html"},
+}
+
 // Template method that loads file
 // The argument fsys is an abstraction
 // NOTE: be sure to handle the error

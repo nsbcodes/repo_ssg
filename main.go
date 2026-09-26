@@ -9,12 +9,6 @@ import (
 	"path/filepath"
 )
 
-// Change template filepaths here
-var templates = map[string]*Template{
-	"folder": {Path: "folder.html"},
-	"file":   {Path: "file.html"},
-}
-
 //go:embed templates
 var embedTemplateFS embed.FS
 
